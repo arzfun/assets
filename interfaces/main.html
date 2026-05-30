@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+
+        @keyframes fireworks {
+            0% {
+                transform: translateX(calc(-50% + var(--soffsetX))) translateY(calc(-50% + var(--soffsetY))) rotate(0deg);
+                opacity: 0.0;
+            }
+            20% {
+                opacity: 0.5;
+
+            }
+            50% {
+                opacity: 1;
+
+            }
+            80% {
+                opacity: 0.5;
+
+            }
+            100% {
+                transform: translateX(calc(-50% + var(--offsetX))) translateY(calc(-50% + var(--offsetY))) rotate(var(--rotation));
+                opacity: 0.0;
+            }
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+
+
+        .random-logos {
+            position: absolute;
+            animation: fireworks 4s ease-in-out forwards;
+        }
+    </style>
+</head>
+<body>
+    <script>
+        create()
+        function create()
+        {   
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
+            for (let i = 0; i < 50; i++) {
+                const img = document.createElement('img');
+                img.src = 'arzfun-logo.png';
+                img.classList.add('random-logos');
+
+                const offsetX = Math.floor(Math.random() * (centerX * 2) - centerX);
+                const offsetY = Math.floor(Math.random() * (centerY * 2) - centerY);
+                const rotation = Math.floor(Math.random() * 360);
+
+                const soffsetX = Math.floor(Math.random() * (centerX * 2) - centerX);
+                const soffsetY = Math.floor(Math.random() * (centerY * 2) - centerY);
+                img.style.setProperty('--soffsetX', `${soffsetX}px`);
+                img.style.setProperty('--soffsetY', `${soffsetY}px`);
+                img.style.setProperty('--offsetX', `${offsetX}px`);
+                img.style.setProperty('--offsetY', `${offsetY}px`);
+                img.style.setProperty('--rotation', `${rotation}deg`);
+
+                document.body.appendChild(img);
+            }
+            setTimeout(() => {
+                create();
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

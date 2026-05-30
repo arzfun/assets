@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@500&display=swap');
+
+        @keyframes fireworks {
+            0% {
+                transform: translate(-50%, -50) rotate(0deg);
+            }
+            100% {
+                transform: translateX(calc(-50% + var(--offsetX))) translateY(calc(-50% + var(--offsetY))) rotate(var(--rotation));
+            }
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        #center-logo {
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 100;
+        }
+
+        #welcome-text {
+            position: absolute;
+            top: 60%;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            font-size: 46px; 
+            font-family: 'Kanit', sans-serif;
+            color: #333;
+            z-index: 99;
+            white-space: nowrap;
+        }
+
+        .random-logos {
+            position: absolute;
+            animation: fireworks 4s ease-in-out forwards;
+        }
+
+        #streak-container {
+            position: absolute;
+            top: 80%;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            z-index: 98;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        #streak-icon {
+            width: 60px;
+            height: 60px;
+            transition: all 2s ease-in-out;
+            filter: grayscale(100%) brightness(0.3);
+        }
+
+        #streak-icon.lit {
+            animation: fireGlow 2s ease-in-out infinite alternate;
+            filter: grayscale(0%) brightness(1);
+        }
+
+        #streak-icon.level-1.lit {
+            filter: grayscale(0%) brightness(1) drop-shadow(0 0 20px #fea113) drop-shadow(0 0 30px #fea113);
+        }
+
+        #streak-icon.level-2.lit {
+            filter: grayscale(0%) brightness(1) drop-shadow(0 0 20px #ff6b0b) drop-shadow(0 0 30px #ff6b0b);
+        }
+
+        #streak-icon.level-3.lit {
+            filter: grayscale(0%) brightness(1) drop-shadow(0 0 20px #ff4245) drop-shadow(0 0 30px #ff4245);
+        }
+
+        #streak-icon.level-4.lit {
+            filter: grayscale(0%) brightness(1) drop-shadow(0 0 20px #f948ce) drop-shadow(0 0 30px #f948ce);
+        }
+
+        #streak-icon.level-5.lit {
+            filter: grayscale(0%) brightness(1) drop-shadow(0 0 20px #c067ff) drop-shadow(0 0 30px #c067ff);
+        }
+
+        @keyframes fireGlow {
+            0% {
+                transform: scale(1);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(1.05);
+                opacity: 1;
+            }
+        }
+
+        #streak-days {
+            font-size: 32px;
+            font-family: 'Kanit', sans-serif;
+            font-weight: bold;
+            margin: 0;
+            filter: grayscale(100%) brightness(0.3);
+            transition: filter 2s ease-in-out, color 2s ease-in-out;
+        }
+
+        #streak-days.lit {
+            filter: grayscale(0%) brightness(1);
+        }
+
+        #streak-days.level-1 { color: #fea113; }
+        #streak-days.lit.level-1 { text-shadow: none; }
+
+        #streak-days.level-2 { color: #ff6b0b; }
+        #streak-days.lit.level-2 { text-shadow: none; }
+
+        #streak-days.level-3 { color: #ff4245; }
+        #streak-days.lit.level-3 { text-shadow: none; }
+
+        #streak-days.level-4 { color: #f948ce; }
+        #streak-days.lit.level-4 { text-shadow: none; }
+
+        #streak-days.level-5 { color: #c067ff; }
+        #streak-days.lit.level-5 { text-shadow: none; }
+
+        .streak-update {
+            animation: streakUpdate 1.5s ease-in-out;
+        }
+
+        @keyframes streakUpdate {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.2);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .digits {
+            display: inline-flex;
+            gap: 4px;
+        }
+
+        .digit {
+            position: relative;
+            height: 1em;
+            min-width: 1ch;
+            padding: 0 2px;
+            overflow: hidden;
+            display: inline-block;
+            background: transparent;
+        }
+
+        .digit-inner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            flex-direction: column;
+            transform: translateY(0%);
+            transition: transform var(--dur, 700ms) cubic-bezier(.25,.8,.25,1);
+            transition-delay: var(--delay, 0ms);
+            will-change: transform;
+        }
+
+        .digit.flip .digit-inner {
+            transform: translateY(-50%);
+        }
+
+        .digit-val {
+            height: 1em;
+            line-height: 1em;
+            text-align: center;
+            background: transparent;
+        }
+    </style>
+</head>
+<body>
+    <img id="center-logo" src="arzfun-welcome.png" alt="arzfun-welcome">
+    <div id="welcome-text"></div>
+    <div id="streak-container">
+        <img id="streak-icon" src="" alt="streak">
+        <p id="streak-days">0</p>
+    </div>
+    
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const nick = urlParams.get('name');
+        const days = parseInt(urlParams.get('days')) || 0;
+        const mode = parseInt(urlParams.get('mode') || '0') || 0;
+        const FIRE_DUR = 2000;
+        
+        const welcomeText = document.getElementById('welcome-text');
+        const streakIcon = document.getElementById('streak-icon');
+        const streakDays = document.getElementById('streak-days');
+        
+        welcomeText.textContent = `Welcome, ${nick || 'Guest'}`;
+        welcomeText.style.color = 'white';
+
+        function getLevel(days) {
+            if (days < 30) return 1;
+            if (days < 50) return 2;
+            if (days < 100) return 3;
+            if (days < 200) return 4;
+            return 5;
+        }
+
+        function updateStreak() {
+            let level = getLevel(days);
+            if(mode > 3) level = 1;
+            
+            streakIcon.src = `./streak/streak_light_level_${level}.png`;
+            
+            if (mode === 3) {
+                streakIcon.style.transition = 'none';
+                streakDays.style.transition = 'none';
+            }
+            
+            streakIcon.className = `level-${level}`;
+            streakDays.className = `level-${level}`;
+            
+            switch (mode) {
+                case 0: {
+                    document.getElementById('streak-container').style.display = 'none';
+                    break;
+                }
+                case 1: {
+                    streakIcon.classList.remove('lit');
+                    streakDays.classList.remove('lit');
+                    renderDigits(days, days, { leftAlign: false });
+                    break;
+                }
+                case 2: {
+                    streakIcon.classList.remove('lit');
+                    streakDays.classList.remove('lit');
+                    const prev = Math.max(0, days - 1);
+                    renderDigits(prev, days, { leftAlign: false });
+                    setTimeout(() => {
+                        streakIcon.classList.add('lit');
+                        streakDays.classList.add('lit');
+                        streakIcon.classList.add('streak-update');
+                        startDigitFlip(prev, days, { leftAlign: false });
+                        setTimeout(() => {
+                            streakIcon.classList.remove('streak-update');
+                        }, 1500);
+                    }, 0);
+                    break;
+                }
+                case 3: {
+                    streakIcon.classList.add('lit');
+                    streakDays.classList.add('lit');
+                    void streakIcon.offsetWidth;
+                    void streakDays.offsetWidth;
+                    streakIcon.style.transition = '';
+                    streakDays.style.transition = '';
+                    renderDigits(days, days, { leftAlign: false });
+                    break;
+                }
+                case 4: {
+                    streakIcon.classList.remove('lit');
+                    streakDays.classList.remove('lit');
+                    renderDigits(days, 1, { leftAlign: true });
+                    startDigitFlip(days, 1, { leftAlign: true });
+                    break;
+                }
+                case 5: {
+                    streakIcon.classList.remove('lit');
+                    streakDays.classList.remove('lit');
+                    renderDigits(days, 1, { leftAlign: true });
+                    startDigitFlip(days, 1, { leftAlign: true });
+                    setTimeout(() => {
+                        streakIcon.classList.add('lit');
+                        streakDays.classList.add('lit');
+                    }, FIRE_DUR);
+                    break;
+                }
+                default: {
+                    streakIcon.classList.remove('lit');
+                    streakDays.classList.remove('lit');
+                    renderDigits(days, days, { leftAlign: false });
+                }
+            }
+        }
+
+        updateStreak();
+
+        const centerX = window.innerWidth / 2;
+        const centerY = window.innerHeight / 2;
+        for (let i = 0; i < 10; i++) {
+            const img = document.createElement('img');
+            img.src = 'arzfun-logo.png';
+            img.classList.add('random-logos');
+
+            const offsetX = Math.floor(Math.random() * (centerX * 2) - centerX);
+            const offsetY = Math.floor(Math.random() * (centerY * 2) - centerY);
+            const rotation = Math.floor(Math.random() * 360);
+
+            img.style.setProperty('--offsetX', `${offsetX}px`);
+            img.style.setProperty('--offsetY', `${offsetY}px`);
+            img.style.setProperty('--rotation', `${rotation}deg`);
+
+            document.body.appendChild(img);
+        }
+
+        function splitDigits(num) {
+            return String(num).split('').map(ch => (/[0-9]/.test(ch) ? ch : ''));
+        }
+
+        function renderDigits(fromValue, toValue, options) {
+            const opts = options || {};
+            const leftAlign = !!opts.leftAlign;
+            const fromDigits = splitDigits(fromValue);
+            const toDigits = splitDigits(toValue);
+            const maxLen = Math.max(fromDigits.length, toDigits.length);
+
+            const padCountFrom = maxLen - fromDigits.length;
+            const padCountTo = maxLen - toDigits.length;
+            const padFrom = Array(padCountFrom).fill('');
+            const padTo = Array(padCountTo).fill('');
+            const paddedFrom = leftAlign ? fromDigits.concat(padFrom) : padFrom.concat(fromDigits);
+            const paddedTo = leftAlign ? toDigits.concat(padTo) : padTo.concat(toDigits);
+
+            const container = document.createElement('span');
+            container.className = 'digits';
+
+            for (let i = 0; i < maxLen; i++) {
+                const fromD = paddedFrom[i] === '' ? ' ' : paddedFrom[i];
+                const toD = paddedTo[i] === '' ? ' ' : paddedTo[i];
+                const digit = document.createElement('span');
+                digit.className = 'digit';
+
+                const inner = document.createElement('span');
+                inner.className = 'digit-inner';
+
+                const top = document.createElement('span');
+                top.className = 'digit-val';
+                top.textContent = toD === fromD ? toD : fromD;
+
+                const bottom = document.createElement('span');
+                bottom.className = 'digit-val';
+                bottom.textContent = toD;
+
+                inner.appendChild(top);
+                inner.appendChild(bottom);
+                digit.appendChild(inner);
+
+                container.appendChild(digit);
+            }
+
+            streakDays.innerHTML = '';
+            streakDays.appendChild(container);
+        }
+
+        function startDigitFlip(fromValue, toValue, options) {
+            const opts = options || {};
+            const leftAlign = !!opts.leftAlign;
+            const fromDigits = splitDigits(fromValue);
+            const toDigits = splitDigits(toValue);
+            const maxLen = Math.max(fromDigits.length, toDigits.length);
+            const padCountFrom = maxLen - fromDigits.length;
+            const padCountTo = maxLen - toDigits.length;
+            const paddedFrom = leftAlign
+                ? fromDigits.concat(Array(padCountFrom).fill(''))
+                : Array(padCountFrom).fill('').concat(fromDigits);
+            const paddedTo = leftAlign
+                ? toDigits.concat(Array(padCountTo).fill(''))
+                : Array(padCountTo).fill('').concat(toDigits);
+
+            const digitEls = streakDays.querySelectorAll('.digit');
+            for (let i = 0; i < maxLen; i++) {
+                const idxFromRight = maxLen - 1 - i;
+                const idxFromLeft = i;
+                const fromD = paddedFrom[i];
+                const toD = paddedTo[i];
+                const el = digitEls[i];
+                const inner = el.querySelector('.digit-inner');
+                const topEl = inner.children[0];
+                const bottomEl = inner.children[1];
+
+                let delay = 0;
+                if (!leftAlign) {
+                    if (idxFromRight === 0) delay = 0;
+                    else if (idxFromRight === 1) delay = 200;
+                    else delay = 300 + Math.min(150 * (idxFromRight - 2), 300);
+                } else {
+                    if (idxFromLeft === 0) delay = 0
+                    else delay = 120 * idxFromLeft;
+                }
+
+                let dur = 2000;
+
+                if (fromD === toD) {
+                    inner.style.setProperty('--dur', '0ms');
+                    inner.style.setProperty('--delay', '0ms');
+                    continue;
+                }
+
+                inner.style.setProperty('--dur', `${dur}ms`);
+                inner.style.setProperty('--delay', `${delay}ms`);
+                
+                const onEnd = (e) => {
+                    if (e.propertyName !== 'transform') return;
+                    inner.removeEventListener('transitionend', onEnd);
+                    inner.style.transition = 'none';
+                    el.classList.remove('flip');
+                    topEl.textContent = toD;
+                    bottomEl.textContent = toD;
+                    inner.style.transform = 'translateY(0)';
+                    void inner.offsetWidth;
+                    inner.style.transition = '';
+                    inner.style.removeProperty('--dur');
+                    inner.style.removeProperty('--delay');
+                };
+                inner.addEventListener('transitionend', onEnd);
+
+                requestAnimationFrame(() => {
+                    el.classList.add('flip');
+                });
+            }
+        }
+    </script>
+</body>
+</html>

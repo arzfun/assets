@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@500&display=swap');
+
+        @keyframes fireworks {
+            0% {
+                transform: translate(-50%, -50) rotate(0deg);
+            }
+            100% {
+                transform: translateX(calc(-50% + var(--offsetX))) translateY(calc(-50% + var(--offsetY))) rotate(var(--rotation));
+            }
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        #center-logo {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 100;
+        }
+
+        #welcome-text {
+            position: absolute;
+            top: 60%;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            font-size: 46px; 
+            font-family: 'Kanit', sans-serif;
+            color: #333;
+            z-index: 99;
+        }
+
+        .random-logos {
+            position: absolute;
+            animation: fireworks 4s ease-in-out forwards;
+        }
+    </style>
+</head>
+<body>
+    <img id="center-logo" src="arzfun-welcome.png" alt="arzfun-welcome">
+    <div id="welcome-text"></div>
+    
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const nick = urlParams.get('name');
+        const welcomeText = document.getElementById('welcome-text');
+        welcomeText.textContent = `Welcome, ${nick || 'Guest'}`;
+        welcomeText.style.color = 'white';
+
+
+        const centerX = window.innerWidth / 2;
+        const centerY = window.innerHeight / 2;
+        for (let i = 0; i < 10; i++) {
+            const img = document.createElement('img');
+            img.src = 'arzfun-logo.png';
+            img.classList.add('random-logos');
+
+            const offsetX = Math.floor(Math.random() * (centerX * 2) - centerX);
+            const offsetY = Math.floor(Math.random() * (centerY * 2) - centerY);
+            const rotation = Math.floor(Math.random() * 360);
+
+            img.style.setProperty('--offsetX', `${offsetX}px`);
+            img.style.setProperty('--offsetY', `${offsetY}px`);
+            img.style.setProperty('--rotation', `${rotation}deg`);
+
+            document.body.appendChild(img);
+        }
+    </script>
+</body>
+</html>
