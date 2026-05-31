@@ -29,13 +29,20 @@ body {
 .modal {
   position: relative;
   width: 800px;
-  transform: scale(1.5);
+  transform: scale(1);
   background: var(--card);
   border-radius: 20px;
   overflow: hidden;
   border: 1px solid rgba(255,255,255,0.07);
   box-shadow: 0 0 0 1px rgba(255,60,172,0.1), 0 28px 70px rgba(0,0,0,0.85);
 }
+
+@media (min-width: 1600px) {
+    .modal {
+        transform: scale(1.5);
+    }
+}
+
 
 .modal::before {
   content:''; position:absolute; top:0; left:0; right:0; height:2px;
