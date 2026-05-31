@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{width:100%;height:100vh;display:flex;align-items:center;justify-content:center;background:transparent;}
+.popup{width:1020px;transform: scale(0.8);background:linear-gradient(150deg,#100024 0%,#1a003a 45%,#0d001e 100%);border:1px solid rgba(160,70,255,0.35);border-radius:18px;display:flex;position:relative;font-family:'Montserrat',sans-serif;box-shadow:0 0 60px rgba(100,20,200,0.2),inset 0 1px 0 rgba(200,130,255,0.15);}
+@media (min-width: 1600px) {.popup {transform: scale(1.2);}}
+.top-line{position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent 0%,rgba(200,120,255,0.9) 50%,transparent 100%);z-index:10;}
+.bot-line{position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent 0%,rgba(200,120,255,0.6) 50%,transparent 100%);z-index:10;}
+.ambient{position:absolute;top:0;left:0;right:0;bottom:0;background:radial-gradient(ellipse at 35% 60%,rgba(120,30,220,0.08) 0%,transparent 60%);pointer-events:none;z-index:0;}
+.xbtn{position:absolute;top:12px;right:12px;width:32px;height:32px;border:none;background:#c0000a;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:30;color:#fff;font-size:18px;font-weight:900;line-height:1;}
+.left{width:280px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;padding:24px 14px 18px;position:relative;z-index:2;border-right:1px solid rgba(140,50,230,0.18);background:rgba(0,0,0,0.1);overflow:visible;}
+.title-area{text-align:center;}
+.hello{font-size:11px;font-weight:600;color:rgba(190,140,255,0.55);letter-spacing:4px;text-transform:uppercase;margin-bottom:6px;}
+.brandname{font-size:24px;font-weight:900;color:#fff;letter-spacing:4px;text-transform:uppercase;line-height:1;}
+.brandname span{color:#b060ff;}
+.tagline{font-size:12px;font-weight:500;color:rgba(170,110,255,0.55);letter-spacing:1px;margin-top:5px;}
+.tagline b{color:#c084fc;font-weight:800;font-size:13px;}
+.imgs-area{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;width:100%;padding-top:8px;position:relative;overflow:visible;}
+.char-glow{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:220px;height:320px;background:radial-gradient(ellipse at 50% 80%,rgba(255,80,180,0.45) 0%,rgba(220,50,150,0.2) 40%,transparent 70%);pointer-events:none;z-index:1;filter:blur(18px);}
+.char-img{width:340px;object-fit:contain;position:absolute;bottom:0;left:50%;transform:translateX(-50%);z-index:2;}
+.accept-btn{margin-top:16px;width:100%;background:linear-gradient(90deg,#18883e,#21a84d);border:none;border-radius:9px;color:#fff;font-family:'Montserrat',sans-serif;font-size:15px;font-weight:800;letter-spacing:3px;text-transform:uppercase;padding:13px 0;cursor:pointer;box-shadow:0 3px 20px rgba(25,150,70,0.3);}
+.right{flex:1;padding:30px 36px 24px 26px;display:flex;flex-direction:column;gap:16px;position:relative;z-index:2;}
+.section-label{font-size:9.5px;font-weight:700;color:rgba(220,160,255,0.9);letter-spacing:4px;text-transform:uppercase;}
+.body-text{font-size:11px;font-weight:400;line-height:1.6;color:#ffffff;}
+.body-text strong{color:#ffffff;font-weight:700;}
+.body-text .pur{color:#ffffff;font-weight:600;}
+.divider{height:1px;background:linear-gradient(90deg,rgba(140,50,230,0.3) 0%,transparent 80%);}
+.gifts-box{display:flex;flex-direction:column;gap:10px;}
+.g-row{display:flex;gap:10px;}
+.g-card{flex:1;background:rgba(80,15,150,0.2);border:1px solid rgba(160,70,255,0.2);border-radius:12px;display:flex;flex-direction:column;align-items:center;padding:14px 10px;position:relative;overflow:hidden;}
+.g-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(190,110,255,0.4),transparent);}
+.g-num{font-size:34px;font-weight:900;color:#ffffff;line-height:1;letter-spacing:-1px;}
+.g-type{font-size:10px;font-weight:700;color:#ffffff;letter-spacing:3px;text-transform:uppercase;margin-top:5px;}
+.bottom-row{display:flex;flex-direction:row;align-items:center;gap:16px;margin-top:auto;}
+.cake-img{width:110px;object-fit:contain;flex-shrink:0;}
+.birthday-badge{flex:1;background:rgba(80,15,150,0.2);border:1px solid rgba(160,70,255,0.2);border-radius:12px;display:flex;align-items:center;justify-content:center;padding:14px 10px;position:relative;overflow:hidden;box-shadow:0 4px 15px rgba(139,92,246,0.4);}
+.birthday-badge::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(190,110,255,0.4),transparent);}
+.birthday-badge span{font-size:28px;font-weight:900;color:#c084fc;line-height:1;letter-spacing:-1px;text-transform:uppercase;}
+.footer-txt{font-size:11px;font-weight:400;color:#ffffff;line-height:1.65;}
+.g-card--accent{background:rgba(100,20,180,0.28);border-color:rgba(200,120,255,0.35);flex-direction:row;gap:12px;padding:12px 18px;justify-content:flex-start;}
+.g-card--accent::before{background:linear-gradient(90deg,transparent,rgba(220,150,255,0.5),transparent);}
+.g-icon{font-size:28px;line-height:1;flex-shrink:0;}
+.g-acc-name{font-size:13px;font-weight:800;color:#ecdcff;letter-spacing:0.5px;line-height:1.3;}
+.g-acc-sub{font-size:11px;font-weight:500;color:rgba(190,130,255,0.65);letter-spacing:0.5px;margin-top:3px;font-style:italic;}
+.g-acc-text{display:flex;flex-direction:column;justify-content:center;}
+#confetti-canvas{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:5;border-radius:18px;overflow:hidden;}
+</style>
+</head>
+<body>
+<div class="popup">
+  <canvas id="confetti-canvas"></canvas>
+  <div class="top-line"></div>
+  <div class="bot-line"></div>
+  <div class="ambient"></div>
+  <button class="xbtn" onclick="closeModal();">&#10005;</button>
+  <div class="left">
+    <div class="title-area">
+      <div class="hello">&#128526; Дорогие друзья</div>
+      <div class="brandname">ARIZONA <span>FUN</span></div>
+      <div class="tagline">исполняется &nbsp;<b>4 года!</b></div>
+    </div>
+    <div class="imgs-area">
+      <div class="char-glow"></div>
+      <img class="char-img" src="character_1.png">
+    </div>
+    <button class="accept-btn" onclick="accept();">ПРИНЯТЬ</button>
+  </div>
+  <div class="right">
+    <div class="section-label">&#127873; Поздравление</div>
+    <div class="body-text">
+      Нам официально исполняется <strong>4 года! 🎂</strong> - За это время мы прошли через всё: взлёты до небес, когда онлайн ломился от сотни игроков, и моменты «затишья». Мы — комьюнити, которое выжило и стало сильнее. - Спасибо каждому, кто был за нас с самого начала, и тем, кто с нами только со вчера. <strong>Вы — наш стержень</strong> - Мы продолжаем делать также, как и в первый день. Впереди только развитие, бонусы и вайб с <span class="pur">бесплатной админкой</span>. Дальше — больше! ⚡️
+    </div>
+    <div class="divider"></div>
+    <div class="body-text">Нажми <strong>"Принять"</strong> и получи <strong>подарок от нас лично!</strong></div>
+    <div class="section-label">&#127873; Твои подарки</div>
+    <div class="gifts-box">
+      <div class="g-row">
+        <div class="g-card"><div class="g-num">50</div><div class="g-type">FDonate</div></div>
+        <div class="g-card"><div class="g-num">100</div><div class="g-type">Fun-Coin</div></div>
+      </div>
+      <div class="g-row">
+        <div class="g-card g-card--accent"><div class="g-icon">&#127881;</div><div class="g-acc-text"><div class="g-acc-name">Праздничный Аксессуар</div><div class="g-acc-sub">«Носи с удовольствием»</div></div></div>
+      </div>
+    </div>
+    <div class="bottom-row">
+      <img class="cake-img" src="cake.png">
+      <div class="birthday-badge"><span>Нам 4 Года!</span></div>
+    </div>
+    <div class="footer-txt">С наилучшими пожеланиями,<br>Руководство ARZFUN | Radare, Patsoha</div>
+  </div>
+</div>
+</body>
+<script>
+function accept() {
+  console.log("arzfunGift4.accept");
+  if (window.cef) {
+    window.cef.SendMessage("arzfunGift4.accept", 5);
+    return;
+  }
+}
+function closeModal() {
+  console.log("arzfunGift4.close");
+  if (window.cef) {
+    window.cef.SendMessage("arzfunGift4.close", 5);
+    return;
+  }
+}
+
+(function(){
+  var popup = document.querySelector('.popup');
+  var canvas = document.getElementById('confetti-canvas');
+  var ctx = canvas.getContext('2d');
+  var W, H;
+  var particles = [];
+  var COLORS = ['#c084fc','#a855f7','#f0abfc','#e879f9','#fbbf24','#34d399','#60a5fa','#f472b6','#fff','#d946ef'];
+  var SHAPES = ['rect','circle','ribbon'];
+  var EDGE = 70;
+
+  function resize(){
+    var r = popup.getBoundingClientRect();
+    W = canvas.width = r.width;
+    H = canvas.height = r.height;
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  function rand(a,b){ return a + Math.random()*(b-a); }
+  function randInt(a,b){ return Math.floor(rand(a,b+1)); }
+
+  function spawnParticle(){
+    var side = Math.random() < 0.5 ? 'left' : 'right';
+    var x = side === 'left' ? rand(0, EDGE) : rand(W - EDGE, W);
+    return {
+      x: x,
+      y: rand(-10, H * 0.25),
+      w: rand(6, 12),
+      h: rand(3, 7),
+      color: COLORS[randInt(0, COLORS.length-1)],
+      shape: SHAPES[randInt(0, SHAPES.length-1)],
+      angle: rand(0, Math.PI*2),
+      spin: rand(-0.12, 0.12),
+      vx: rand(-0.8, 0.8),
+      vy: rand(0.4, 1.2),
+      alpha: rand(0.85, 1),
+      fade: rand(0.002, 0.005),
+      wobble: rand(0, Math.PI*2),
+      wobbleSpeed: rand(0.02, 0.04)
+    };
+  }
+
+  for(var i=0; i<50; i++) particles.push(spawnParticle());
+
+  var spawnTimer = 0;
+  var lastTime = 0;
+
+  function draw(ts){
+    var dt = Math.min((ts - lastTime) / 16.67, 3);
+    lastTime = ts;
+    ctx.clearRect(0,0,W,H);
+    spawnTimer++;
+    if(spawnTimer % 8 === 0 && particles.length < 80){
+      particles.push(spawnParticle());
+    }
+
+    for(var i = particles.length-1; i >= 0; i--){
+      var p = particles[i];
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+      p.angle += p.spin * dt;
+      p.wobble += p.wobbleSpeed * dt;
+      p.alpha -= p.fade * dt;
+      p.vx += Math.sin(p.wobble) * 0.025 * dt;
+
+      if(p.alpha <= 0 || p.y > H + 20){
+        particles.splice(i,1);
+        continue;
+      }
+
+      ctx.save();
+      ctx.globalAlpha = p.alpha;
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.angle);
+      ctx.fillStyle = p.color;
+
+      if(p.shape === 'rect'){
+        ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
+      } else if(p.shape === 'circle'){
+        ctx.beginPath();
+        ctx.ellipse(0, 0, p.w/2, p.h/2, 0, 0, Math.PI*2);
+        ctx.fill();
+      } else {
+        ctx.beginPath();
+        ctx.moveTo(-p.w/2, 0);
+        ctx.quadraticCurveTo(0, -p.h*1.5, p.w/2, 0);
+        ctx.quadraticCurveTo(0, p.h*1.5, -p.w/2, 0);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+    requestAnimationFrame(draw);
+  }
+  requestAnimationFrame(draw);
+})();
+</script>
+</body>
