@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Выбор сета аксессуаров</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#100c09;
+    --panel:#1b140e;
+    --panel-2:#241b12;
+    --stroke:#3a2c1c;
+    --text:#efe4cf;
+    --text-dim:#a89a80;
+    --gold:#c9a227;
+    --gold-soft:#e9c869;
+
+    --accent:#c9a227;
+    --accent-soft:#3a2f18;
+    --accent-glow:rgba(201,162,39,.35);
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0;}
+
+  html,body{
+    width:100%;height:100%;
+    background:transparent;
+    font-family:'Manrope','Segoe UI',Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    overflow:hidden;
+    user-select:none;
+    -webkit-tap-highlight-color:transparent;
+    touch-action:manipulation;
+  }
+
+  body{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    height:100%;
+  }
+
+  .stage{
+    position:relative;
+    width:860px;
+    flex:0 0 auto;
+    transform-origin:center center;
+    will-change:transform;
+    opacity:0;
+    transition:opacity .15s ease;
+  }
+  .stage.ready{opacity:1;}
+
+  .panel{
+    position:relative;
+    display:flex;
+    height:600px;
+    background:
+      radial-gradient(120% 140% at 0% 0%, var(--accent-soft) 0%, transparent 55%),
+      linear-gradient(180deg,var(--panel) 0%, var(--panel-2) 100%);
+    border:1px solid var(--stroke);
+    border-radius:14px;
+    box-shadow:
+      0 30px 60px -20px rgba(0,0,0,.7),
+      0 0 0 1px rgba(0,0,0,.4),
+      inset 0 1px 0 rgba(255,255,255,.03);
+    overflow:hidden;
+    transition:box-shadow .5s ease;
+  }
+
+  .panel::before{
+    content:"";
+    position:absolute; inset:0;
+    background:repeating-linear-gradient(
+      to bottom, rgba(255,255,255,.015) 0px, rgba(255,255,255,.015) 1px,
+      transparent 1px, transparent 3px);
+    pointer-events:none;
+    opacity:.35;
+  }
+
+  .panel::after{
+    content:"";
+    position:absolute; inset:0;
+    box-shadow: inset 0 0 90px var(--accent-glow);
+    transition:box-shadow .6s ease;
+    pointer-events:none;
+  }
+
+  .photo-side{
+    position:relative;
+    width:300px;
+    flex:0 0 300px;
+    padding:20px 20px 14px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:linear-gradient(180deg,rgba(0,0,0,.25),rgba(0,0,0,.05));
+    border-right:1px solid var(--stroke);
+  }
+
+  .photo-frame{
+    position:relative;
+    width:100%;
+    height:100%;
+    border-radius:10px;
+    overflow:hidden;
+    border:1px solid var(--stroke);
+    box-shadow:
+      0 0 0 1px rgba(0,0,0,.5),
+      0 0 34px -6px var(--accent-glow);
+    background:
+      radial-gradient(65% 55% at 50% 78%, var(--accent-glow) 0%, transparent 70%),
+      #0c0906;
+    transition:box-shadow .5s ease;
+    display:flex;
+    align-items:flex-end;
+    justify-content:center;
+  }
+
+  .photo-frame::before{
+    content:"";
+    position:absolute;
+    z-index:0;
+    top:12%;
+    left:50%;
+    width:78%;
+    aspect-ratio:1;
+    transform:translateX(-50%);
+    border-radius:50%;
+    background:var(--accent);
+    filter:blur(46px);
+    opacity:.4;
+    transition:background .5s ease;
+    animation:backlightPulse 3.4s ease-in-out infinite;
+  }
+
+  @keyframes backlightPulse{
+    0%,100%{ opacity:.32; transform:translateX(-50%) scale(1); }
+    50%{ opacity:.5; transform:translateX(-50%) scale(1.08); }
+  }
+
+  .particles{
+    position:absolute;
+    inset:0;
+    z-index:1;
+    overflow:hidden;
+    pointer-events:none;
+  }
+
+  .particle{
+    position:absolute;
+    top:-8%;
+    left:var(--x);
+    width:var(--size);
+    height:var(--size);
+    opacity:0;
+    animation:particleFall var(--dur) linear var(--delay) infinite;
+  }
+  .particle svg{width:100%;height:100%;display:block;}
+
+  @keyframes particleFall{
+    0%{ transform:translate(0,0) rotate(0deg); opacity:0; }
+    8%{ opacity:.85; }
+    85%{ opacity:.6; }
+    100%{ transform:translate(var(--dx), 560px) rotate(300deg); opacity:0; }
+  }
+
+  .photo-frame img{
+    position:relative;
+    z-index:2;
+    width:100%;height:100%;
+    object-fit:contain;
+    object-position:center bottom;
+    display:block;
+    opacity:0;
+    transform:translateY(6px) scale(1.01);
+    transition:opacity .35s ease, transform .5s ease;
+    filter:drop-shadow(0 14px 18px rgba(0,0,0,.55));
+  }
+  .photo-frame img.show{opacity:1; transform:translateY(0) scale(1);}
+
+  .photo-frame::after{
+    content:"";
+    position:absolute; left:10%; right:10%; bottom:14px;
+    height:14px;
+    background:radial-gradient(closest-side, rgba(0,0,0,.55), transparent 75%);
+    pointer-events:none;
+    border-radius:50%;
+    z-index:2;
+  }
+
+  .badge{
+    position:absolute; top:10px; left:10px;
+    width:34px;height:34px;
+    border-radius:8px;
+    background:rgba(10,8,6,.65);
+    border:1px solid var(--accent);
+    display:flex;align-items:center;justify-content:center;
+    color:var(--accent);
+    z-index:3;
+    backdrop-filter:blur(2px);
+    transition:border-color .4s ease, color .4s ease;
+  }
+  .badge svg{width:18px;height:18px;}
+
+  .count{
+    position:absolute; bottom:10px; right:12px;
+    font-size:11px; letter-spacing:.12em;
+    color:var(--text-dim);
+    z-index:3;
+    font-variant-numeric:tabular-nums;
+  }
+  .count b{color:var(--accent);}
+
+  .info-side{
+    flex:1;
+    height:100%;
+    padding:30px 32px 26px;
+    display:flex;
+    flex-direction:column;
+    min-width:0;
+  }
+
+  .eyebrow{
+    font-family:'Oswald',sans-serif;
+    font-size:11px;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--accent);
+    font-weight:600;
+    transition:color .4s ease;
+  }
+
+  .title{
+    margin-top:6px;
+    font-family:'Oswald',sans-serif;
+    font-size:28px;
+    font-weight:600;
+    color:var(--text);
+    letter-spacing:.015em;
+    line-height:1.15;
+    text-transform:uppercase;
+  }
+
+  .desc{
+    margin-top:12px;
+    font-size:13.5px;
+    line-height:1.55;
+    color:var(--text-dim);
+    min-height:78px;
+  }
+
+  .tags{
+    margin-top:14px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+
+  @keyframes tagIn{
+    from{opacity:0; transform:translateY(6px) scale(.94);}
+    to{opacity:1; transform:translateY(0) scale(1);}
+  }
+
+  @keyframes dotPulse{
+    0%,100%{ box-shadow:0 0 0 0 var(--accent-glow); }
+    50%{ box-shadow:0 0 6px 2px var(--accent-glow); }
+  }
+
+  .tag{
+    font-family:'Manrope',sans-serif;
+    font-size:11.5px;
+    font-weight:700;
+    padding:6px 12px 6px 10px;
+    border-radius:100px;
+    color:var(--text);
+    background:linear-gradient(135deg, var(--accent-soft) 0%, rgba(255,255,255,.03) 100%);
+    border:1px solid var(--accent-glow);
+    box-shadow:0 2px 10px -4px var(--accent-glow), inset 0 1px 0 rgba(255,255,255,.06);
+    display:inline-flex;
+    align-items:center;
+    letter-spacing:.01em;
+    opacity:0;
+    animation:tagIn .35s ease forwards;
+    transition:transform .18s ease, box-shadow .3s ease, border-color .4s ease, background .4s ease;
+  }
+  .tag:hover{
+    transform:translateY(-2px);
+    box-shadow:0 6px 16px -4px var(--accent-glow), inset 0 1px 0 rgba(255,255,255,.08);
+  }
+  .tag::before{
+    content:"";
+    display:inline-block;
+    width:6px;height:6px;
+    border-radius:50%;
+    background:var(--accent);
+    margin-right:7px;
+    transition:background .4s ease;
+    animation:dotPulse 1.8s ease-in-out infinite;
+  }
+
+  .spacer{flex:1;}
+
+  .nav-row{
+    margin-top:18px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+
+  .arrow{
+    width:38px;height:38px;
+    border-radius:9px;
+    border:1px solid var(--stroke);
+    background:rgba(255,255,255,.02);
+    color:var(--text);
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;
+    flex:0 0 auto;
+    transition:border-color .2s, transform .15s, background .2s;
+  }
+  .arrow:hover{border-color:var(--accent); background:rgba(255,255,255,.05);}
+  .arrow:active{transform:scale(.92);}
+  .arrow svg{width:16px;height:16px;}
+
+  .thumbs{
+    display:flex;
+    gap:10px;
+    flex:1;
+    justify-content:center;
+  }
+  .thumb-btn{
+    position:relative;
+    width:77px;height:106px;
+    border-radius:10px;
+    border:1px solid var(--stroke);
+    background:#150f0a;
+    overflow:hidden;
+    cursor:pointer;
+    flex:0 0 auto;
+    transition:border-color .25s ease, box-shadow .25s ease, transform .15s ease;
+  }
+  .thumb-btn img{
+    width:100%;height:100%;
+    object-fit:contain;
+    object-position:center bottom;
+    padding:6px;
+    display:block;
+  }
+  .thumb-btn:hover{
+    border-color:var(--t-accent);
+    box-shadow:0 0 14px 1px var(--t-glow), inset 0 0 10px var(--t-glow);
+    transform:translateY(-2px);
+  }
+  .thumb-btn.active{
+    border-color:var(--t-accent);
+    box-shadow:0 0 10px 1px var(--t-glow), inset 0 0 8px var(--t-glow);
+  }
+  .thumb-btn.active::after{
+    content:"";
+    position:absolute; left:50%; bottom:4px;
+    width:4px;height:4px;
+    border-radius:50%;
+    background:var(--t-accent);
+    transform:translateX(-50%);
+    box-shadow:0 0 6px var(--t-glow);
+  }
+
+  .select-btn{
+    margin-top:14px;
+    width:100%;
+    padding:13px 16px;
+    border-radius:10px;
+    border:1px solid var(--accent);
+    background:linear-gradient(180deg, var(--gold-soft), var(--gold));
+    color:#1a1204;
+    font-size:14px;
+    font-weight:700;
+    letter-spacing:.03em;
+    cursor:pointer;
+    text-transform:uppercase;
+    transition:filter .2s, transform .12s, background .4s, border-color .4s;
+  }
+  .select-btn:hover{filter:brightness(1.08);}
+  .select-btn:active{transform:scale(.985);}
+
+  .select-btn.picked{
+    background:linear-gradient(180deg,#7fe6b0,#3fb885);
+    border-color:#3fb885;
+    color:#04140b;
+  }
+
+  .close-btn{
+    position:absolute; top:12px; right:12px;
+    width:26px;height:26px;
+    border-radius:6px;
+    display:flex;align-items:center;justify-content:center;
+    color:var(--text-dim);
+    border:1px solid var(--stroke);
+    background:rgba(0,0,0,.2);
+    cursor:pointer;
+    z-index:3;
+    transition:color .2s, border-color .2s;
+  }
+  .close-btn:hover{color:var(--text); border-color:var(--accent);}
+  .close-btn svg{width:12px;height:12px;}
+
+  .toast{
+    position:absolute;
+    left:50%; bottom:-46px;
+    transform:translateX(-50%);
+    background:#0e0b08;
+    border:1px solid var(--accent);
+    color:var(--text);
+    font-size:12.5px;
+    padding:9px 16px;
+    border-radius:8px;
+    white-space:nowrap;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .25s ease, bottom .25s ease;
+  }
+  .toast.show{opacity:1; bottom:-56px;}
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <div class="panel" id="panel">
+
+    <div class="close-btn" onclick="closePanel()" title="Закрыть">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 4l16 16M20 4L4 20"/></svg>
+    </div>
+
+    <div class="photo-side">
+      <div class="photo-frame">
+        <div class="badge" id="badge"></div>
+        <div class="particles" id="particlesEl"></div>
+        <img id="setImg" src="" alt="">
+        <div class="count"><b id="curNum">1</b>/4</div>
+      </div>
+    </div>
+
+    <div class="info-side">
+      <div class="eyebrow" id="eyebrow">СЕТ АКСЕССУАРОВ · 1 / 4</div>
+      <div class="title" id="titleEl">—</div>
+      <div class="desc" id="descEl">—</div>
+      <div class="tags" id="tagsEl"></div>
+
+      <div class="spacer"></div>
+
+      <div class="nav-row">
+        <div class="arrow" onclick="prevSet()" title="Предыдущий">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+        </div>
+        <div class="thumbs" id="thumbsEl"></div>
+        <div class="arrow" onclick="nextSet()" title="Следующий">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+        </div>
+      </div>
+
+      <button class="select-btn" id="selectBtn" onclick="chooseSet()">Выбрать сет</button>
+    </div>
+
+    <div class="toast" id="toast"></div>
+  </div>
+</div>
+
+<script>
+const SETS = [
+  {
+    id: "1",
+    image: "sladko.png",
+    title: 'Сет «Сладкоежка»',
+    desc: "Розовая пастель, блеск и леденцовые оттенки — аксессуары словно из витрины кондитерской. Для тех, кто выбирает образ ярким, милым и чуточку дерзким.",
+    tags: ["Пастель", "Блеск", "Милый стиль"],
+    theme: { accent:"#ff6fa5", soft:"#3a1a26", glow:"rgba(255,111,165,.4)" },
+    icon: `<path d="M12 2l1.6 3.6L17 7l-3.4 1.4L12 12l-1.6-3.6L7 7l3.4-1.4L12 2z"/><circle cx="12" cy="17" r="4"/>`
+  },
+  {
+    id: "2",
+    image: "led.png",
+    title: 'Сет «Ледяной Король»',
+    desc: "Холодная синева, иней и металлический блеск. Аксессуары в духе северного трона — строгие, тяжёлые и величественные.",
+    tags: ["Лёд", "Металл", "Королевский стиль"],
+    theme: { accent:"#6fd8ff", soft:"#152633", glow:"rgba(111,216,255,.4)" },
+    icon: `<path d="M12 2v20M4.5 6l15 12M19.5 6l-15 12"/>`
+  },
+  {
+    id: "3",
+    image: "cyber.png",
+    title: 'Сет «Робот Монах»',
+    desc: "Техно-минимализм пополам с дзен-эстетикой: строгие линии, матовые пластины и лёгкое цифровое свечение. Баланс машины и спокойствия духа.",
+    tags: ["Техно", "Минимализм", "Свечение"],
+    theme: { accent:"#5eead4", soft:"#123430", glow:"rgba(94,234,212,.4)" },
+    icon: `<rect x="6" y="6" width="12" height="12" rx="2"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/>`
+  },
+  {
+    id: "4",
+    image: "graff.png",
+    title: 'Сет «Бандитка»',
+    desc: "Уличная графика, спрей-краска и характер района. Аксессуары в стиле городских стен — резкие, яркие, с историей за каждым штрихом.",
+    tags: ["Стрит", "Граффити", "Дерзкий стиль"],
+    theme: { accent:"#ff5a36", soft:"#331309", glow:"rgba(255,90,54,.4)" },
+    icon: `<path d="M12 3v6M12 21c-3 0-5-2-5-5 0-2 1-3 2-4l3-3 3 3c1 1 2 2 2 4 0 3-2 5-5 5z"/>`
+  }
+];
+
+let current = 0;
+
+const root = document.documentElement;
+const imgEl = document.getElementById('setImg');
+const titleEl = document.getElementById('titleEl');
+const descEl = document.getElementById('descEl');
+const eyebrow = document.getElementById('eyebrow');
+const tagsEl = document.getElementById('tagsEl');
+const thumbsEl = document.getElementById('thumbsEl');
+const particlesEl = document.getElementById('particlesEl');
+const curNum = document.getElementById('curNum');
+const badge = document.getElementById('badge');
+const selectBtn = document.getElementById('selectBtn');
+
+const PARTICLE_ICONS = {
+  sladko: [
+    '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7-4.4-9.5-9C1 8.7 2.4 5.4 5.8 5.2c2-.1 3.5 1 4.2 2.6.7-1.6 2.2-2.7 4.2-2.6 3.4.2 4.8 3.5 3.3 6.8C19 16.6 12 21 12 21z"/></svg>',
+    '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.8 5.6L19 9l-5.2 1.4L12 16l-1.8-5.6L5 9l5.2-1.4L12 2z"/></svg>',
+    '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="5"/></svg>'
+  ],
+  led: [
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v20M4.5 7l15 10M19.5 7l-15 10M12 2l-2.6 2.6M12 2l2.6 2.6M12 22l-2.6-2.6M12 22l2.6-2.6"/></svg>',
+    '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.6 9L12 20l-3.6-9z"/></svg>'
+  ],
+  cyber: [
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l8 4.5v9L12 20l-8-4.5v-9z"/></svg>',
+    '<svg viewBox="0 0 24 24"><text x="3" y="18" font-size="15" fill="currentColor" font-family="monospace">1</text></svg>',
+    '<svg viewBox="0 0 24 24"><text x="3" y="18" font-size="15" fill="currentColor" font-family="monospace">0</text></svg>'
+  ],
+  graff: [
+    '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c4 6 6 9 6 12a6 6 0 11-12 0c0-3 2-6 6-12z"/></svg>',
+    '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="3"/><circle cx="5" cy="6" r="1.5"/><circle cx="19" cy="8" r="1.7"/><circle cx="7" cy="19" r="1.3"/></svg>'
+  ]
+};
+
+function spawnParticles(s){
+  particlesEl.innerHTML = "";
+  const icons = PARTICLE_ICONS[s.id] || PARTICLE_ICONS.sladko;
+  const count = 16;
+  for(let i=0;i<count;i++){
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const size = 9 + Math.random()*9;
+    const x = Math.random()*42;
+    const dur = 3.6 + Math.random()*3.2;
+    const delay = -Math.random()*dur;
+    const dx = 30 + Math.random()*100;
+    p.style.setProperty('--size', size+'px');
+    p.style.setProperty('--x', x+'%');
+    p.style.setProperty('--dur', dur+'s');
+    p.style.setProperty('--delay', delay+'s');
+    p.style.setProperty('--dx', dx+'px');
+    p.style.color = s.theme.accent;
+    p.innerHTML = icons[Math.floor(Math.random()*icons.length)];
+    particlesEl.appendChild(p);
+  }
+}
+
+function buildThumbs(){
+  thumbsEl.innerHTML = "";
+  SETS.forEach((s,i)=>{
+    const b = document.createElement('div');
+    b.className = 'thumb-btn' + (i===current ? ' active':'');
+    b.style.setProperty('--t-accent', s.theme.accent);
+    b.style.setProperty('--t-glow', s.theme.glow);
+    b.title = s.title;
+    b.onclick = ()=>{ current = i; render(); };
+    const img = document.createElement('img');
+    img.src = s.image;
+    img.alt = s.title;
+    b.appendChild(img);
+    thumbsEl.appendChild(b);
+  });
+}
+
+function updateThumbs(){
+  [...thumbsEl.children].forEach((el,i)=> el.classList.toggle('active', i===current));
+}
+
+function render(){
+  const s = SETS[current];
+
+  root.style.setProperty('--accent', s.theme.accent);
+  root.style.setProperty('--accent-soft', s.theme.soft);
+  root.style.setProperty('--accent-glow', s.theme.glow);
+
+  imgEl.classList.remove('show');
+  imgEl.onload = ()=> imgEl.classList.add('show');
+  imgEl.onerror = ()=> { imgEl.classList.remove('show'); };
+  imgEl.src = s.image;
+  imgEl.alt = s.title;
+
+  titleEl.textContent = s.title;
+  descEl.textContent = s.desc;
+  eyebrow.textContent = `СЕТ АКСЕССУАРОВ · ${current+1} / ${SETS.length}`;
+  curNum.textContent = current+1;
+
+  tagsEl.innerHTML = "";
+  s.tags.forEach((t,i)=>{
+    const el = document.createElement('div');
+    el.className='tag';
+    el.style.animationDelay = (i*70) + 'ms';
+    el.textContent = t;
+    tagsEl.appendChild(el);
+  });
+
+  badge.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${s.icon}</svg>`;
+
+  spawnParticles(s);
+
+  updateThumbs();
+
+  selectBtn.textContent = 'Выбрать сет';
+  selectBtn.classList.remove('picked');
+}
+
+function prevSet(){ current = (current - 1 + SETS.length) % SETS.length; render(); }
+function nextSet(){ current = (current + 1) % SETS.length; render(); }
+
+function showToast(text){
+  const t = document.getElementById('toast');
+  t.textContent = text;
+  t.classList.add('show');
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(()=> t.classList.remove('show'), 1800);
+}
+
+function sendToGame(setId){
+  try{
+    console.log("arzfunWelcomeBonus.selectSet|" + setId);
+    if (window.cef) {
+      window.cef.SendMessage("arzfunWelcomeBonus.selectSet|" + setId, 5);
+      return;
+    }
+  } catch(e){}
+}
+
+function chooseSet(){
+  const s = SETS[current];
+  sendToGame(s.id);
+  selectBtn.textContent = 'Сет выбран ✓';
+  selectBtn.classList.add('picked');
+  showToast(`Выбрано: ${s.title}`);
+}
+
+function closePanel(){
+  sendToGame('5');
+  document.getElementById('panel').style.opacity = '0';
+  document.getElementById('panel').style.transform = 'scale(.97)';
+}
+
+document.addEventListener('keydown', (e)=>{
+  if (e.key === 'ArrowLeft') prevSet();
+  if (e.key === 'ArrowRight') nextSet();
+  if (e.key === 'Enter') chooseSet();
+  if (e.key === 'Escape') closePanel();
+});
+
+buildThumbs();
+render();
+
+const stageEl = document.querySelector('.stage');
+
+function fitStage(){
+  const w = stageEl.offsetWidth;
+  const h = stageEl.offsetHeight;
+  if(!w || !h) return;
+
+  const pad = 12;
+  const availW = window.innerWidth - pad*2;
+  const availH = window.innerHeight - pad*2;
+
+  let scale = Math.min(availW / w, availH / h);
+  if(!isFinite(scale) || scale <= 0) scale = 1;
+  scale = Math.min(scale, 1.15);
+
+  stageEl.style.transform = `translateZ(0) scale(${scale})`;
+  stageEl.classList.add('ready');
+}
+
+window.addEventListener('resize', fitStage);
+window.addEventListener('orientationchange', ()=> setTimeout(fitStage, 50));
+fitStage();
+</script>
+</body>
+</html>
