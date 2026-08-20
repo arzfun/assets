@@ -10,13 +10,14 @@ const tasks=[
       'main-menu-navigation__header-title-image':'https://arzfun.github.io/assets/hud/arzfun-title.png',
       'main-menu-navigation__header-caption-image':'https://arzfun.github.io/assets/hud/arzfun-footer.png',
       'main-menu-map__logo-image':'https://arzfun.github.io/assets/hud/arzfun-logo.png',
-      'main-menu-settings__logo-image':'https://arzfun.github.io/assets/hud/arzfun-logo.png'
+      'main-menu-settings__logo-image':'https://arzfun.github.io/assets/hud/arzfun-logo.png',
+      'player-list__logo-image':'https://arzfun.github.io/assets/hud/arzfun-logo.png'
     };
     const r=i=>{if(i?.tagName!=='IMG')return;for(const c in m)if(i.classList.contains(c)){i.src=m[c];return}};
     document.querySelectorAll('img').forEach(r);
     new MutationObserver(e=>e.forEach(t=>t.addedNodes.forEach(n=>{r(n);if(n.querySelectorAll)n.querySelectorAll('img').forEach(r)}))).observe(document.documentElement,{childList:true,subtree:true});
   },
-  ()=>{document.addEventListener('click',e=>{const el=e.target.closest('.main-menu-footer__media-link,.main-menu-footer__media-social');if(!el)return;e.stopImmediatePropagation();e.preventDefault();const t=el.innerText.toLowerCase();if(t.includes('сайт'))window.cef.Open('https://arzfun.hhos.net/api/launcher/link?site',1);else if(t.includes('форум'))window.cef.Open('https://arzfun.hhos.net/api/launcher/link?forum',1);else if(el.querySelector('.icon-social-vk'))window.cef.Open('https://arzfun.hhos.net/api/launcher/link?vk',1);else if(el.querySelector('.icon-social-tg'))window.cef.Open('https://arzfun.hhos.net/api/launcher/link?telegram',1);else if(el.querySelector('.icon-social-discord'))window.cef.Open('https://arzfun.hhos.net/api/launcher/link?discord',1);},true)}
+  ()=>{document.addEventListener('click',e=>{const el=e.target.closest('.main-menu-footer__media-link,.main-menu-footer__media-social');if(!el)return;e.stopImmediatePropagation();e.preventDefault();const t=el.innerText.toLowerCase();if(t.includes('сайт'))window.cef.Open('https://arzfun.hhos.net/link/site?r=gamemenu',1);else if(t.includes('форум'))window.cef.Open('https://arzfun.hhos.net/link/forum?r=gamemenu',1);else if(el.querySelector('.icon-social-vk'))window.cef.Open('https://arzfun.hhos.net/link/vk?r=gamemenu',1);else if(el.querySelector('.icon-social-tg'))window.cef.Open('https://arzfun.hhos.net/link/telegram?r=gamemenu',1);else if(el.querySelector('.icon-social-discord'))window.cef.Open('https://arzfun.hhos.net/link/discord?r=gamemenu',1);},true)}
 ];
 const names=['server-flag','vip-logo','dialog-color','logo-video','img-replace','menu-links'];
 const run=()=>tasks.forEach((fn,i)=>{try{fn();log(names[i])}catch(e){log(`${names[i]}: ${e}`,false)}});
