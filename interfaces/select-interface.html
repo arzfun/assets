@@ -150,6 +150,7 @@
     border-radius:6px; background: transparent;
     opacity:0; transition: opacity .25s;
     pointer-events:none;
+    touch-action:none;
   }
   .customScroll.visible{ opacity:1; }
   .scrollThumb{
@@ -159,6 +160,7 @@
     box-shadow: 0 0 14px rgba(90,61,237,0.5);
     transition: width .15s, right .15s;
     pointer-events:auto;
+    touch-action:none;
   }
   .scrollThumb:hover, .scrollThumb.dragging{
     box-shadow: 0 0 20px rgba(183,39,249,0.65);
@@ -232,11 +234,13 @@
     backdrop-filter: blur(4px);
   }
   .name{
+    height: 34px; box-sizing:border-box;
     padding: 7px 9px 9px;
     font-size: 12.5px; font-weight:600; line-height:1.25;
     text-align:center; color:var(--text);
     white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
   }
+  .rowSpacer{ grid-column: 1 / -1; }
 
   .state{
     position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
@@ -264,10 +268,28 @@
     .scrollarea{ padding: 74px 26px 24px 8px; }
     .customScroll{ top:74px; }
     .grid{ gap:8px; }
-    .name{ font-size:11px; padding:5px 6px 7px; }
+    .name{ font-size:11px; padding:5px 6px 7px; height:28px; }
     .closeBtn, .searchwrap{ height:44px; }
     .closeBtn{ width:44px; }
   }
+
+  body.cef .bg{ animation:none; }
+  body.cef .searchwrap, body.cef .closeBtn{
+    backdrop-filter:none; -webkit-backdrop-filter:none;
+    background: rgba(20,14,36,0.72);
+  }
+  body.cef .card{
+    backdrop-filter:none; -webkit-backdrop-filter:none;
+    transition: border-color .12s, background .12s;
+    background: rgba(255,255,255,0.055);
+  }
+  body.cef .card::before{ display:none; }
+  body.cef .card:hover{ transform:none; box-shadow:none; background: rgba(255,255,255,0.09); border-color: rgba(255,255,255,0.22); }
+  body.cef .card:active{ transform:none; }
+  body.cef .card.picked{ animation:none; box-shadow:0 0 0 2px rgba(183,39,249,0.65); }
+  body.cef .thumb img{ filter:none; }
+  body.cef .idchip{ backdrop-filter:none; -webkit-backdrop-filter:none; background: rgba(0,0,0,0.6); }
+  body.cef .card{ animation:none !important; opacity:1 !important; transform:none !important; }
 </style>
 </head>
 <body>
@@ -364,6 +386,9 @@
   const IMAGE_EXT = '.webp';
   const FETCH_TIMEOUT_MS = 7000;
 
+  const CEF_MODE = !!window.cef;
+  if (CEF_MODE) document.body.classList.add('cef');
+
   const params = new URLSearchParams(window.location.search);
   let TYPE = (params.get('type') || 'cars').toLowerCase();
   if (TYPE !== 'cars' && TYPE !== 'skins' && TYPE !== 'weapons') TYPE = 'cars';
@@ -377,6 +402,16 @@
   let currentSig = '';
   let cols = 6;
   let searchTerm = '';
+
+  const ROW_BUFFER = 3;
+  const ANIMATE_LIMIT = 24;
+  let rowGap = 12;
+  let nameH = 34;
+  let rowHeight = 200;
+  let vStart = -1, vEnd = -1;
+  let scrollRAF = null;
+  let topSpacerEl = null, bottomSpacerEl = null;
+  let cardEls = [];
 
   const els = {
     app: document.getElementById('app'),
@@ -538,8 +573,7 @@
         return name.includes(q) || sid.includes(q) || mid.includes(q);
       });
     }
-    els.scrollarea.scrollTop = 0;
-    render();
+    render(true);
   }
 
   function computeCols(){
@@ -551,12 +585,24 @@
     else if (w <= 1700) cols = 7;
     else cols = 8;
     els.grid.style.setProperty('--cols', cols);
+
+    rowGap = (w <= 720) ? 8 : 12;
+    nameH = (w <= 720) ? 28 : 34;
+
+    const gridWidth = els.grid.clientWidth || els.scrollarea.clientWidth;
+    const colWidth = (gridWidth - rowGap * (cols - 1)) / cols;
+    const thumbHeight = colWidth * 0.82;
+    const cardHeight = thumbHeight + nameH + 2;
+    rowHeight = cardHeight + rowGap;
+
+    vStart = -1; vEnd = -1;
   }
 
-  function render(){
-    els.grid.innerHTML = '';
-
+  function render(resetScroll){
     if (!FILTERED.length){
+      els.grid.innerHTML = '';
+      vStart = -1; vEnd = -1;
+      topSpacerEl = null; bottomSpacerEl = null; cardEls = [];
       showState('empty');
       updateMeta();
       updateCustomScroll();
@@ -564,25 +610,104 @@
     }
     showState('grid');
     updateMeta();
-    els.scrollarea.scrollTop = 0;
+    if (resetScroll) els.scrollarea.scrollTop = 0;
+    vStart = -1; vEnd = -1;
+    renderVirtual(!!resetScroll);
+  }
 
-    const frag = document.createDocumentFragment();
-    const ANIMATE_LIMIT = 40;
+  function makeCardEl(item, idx, startIdx, animateNew){
+    const card = buildCard(item);
+    const localIdx = idx - startIdx;
+    if (animateNew && !CEF_MODE && localIdx < ANIMATE_LIMIT){
+      card.style.animationDelay = (localIdx * 10) + 'ms';
+    } else {
+      card.style.animation = 'none';
+      card.style.opacity = '1';
+      card.style.transform = 'none';
+    }
+    return card;
+  }
 
-    FILTERED.forEach((item, idx) => {
-      const card = buildCard(item);
-      if (idx < ANIMATE_LIMIT){
-        card.style.animationDelay = (idx * 10) + 'ms';
-      } else {
-        card.style.animation = 'none';
-        card.style.opacity = '1';
-        card.style.transform = 'none';
+  function detachCard(entry){
+    if (imageObserver){
+      const im = entry.el.querySelector('img');
+      if (im) imageObserver.unobserve(im);
+    }
+    entry.el.remove();
+  }
+
+  function renderVirtual(animateNew){
+    const total = FILTERED.length;
+    if (!total) return;
+
+    const totalRows = Math.ceil(total / cols);
+    const viewportH = els.scrollarea.clientHeight;
+    const scrollTop = els.scrollarea.scrollTop;
+
+    let startRow = Math.floor(scrollTop / rowHeight) - ROW_BUFFER;
+    let endRow = Math.ceil((scrollTop + viewportH) / rowHeight) + ROW_BUFFER;
+    startRow = Math.max(0, Math.min(startRow, totalRows));
+    endRow = Math.max(startRow, Math.min(totalRows, endRow));
+
+    const startIdx = startRow * cols;
+    const endIdx = Math.min(total, endRow * cols);
+
+    if (startIdx === vStart && endIdx === vEnd) return;
+
+    const topH = startRow * rowHeight;
+    const bottomH = (totalRows - endRow) * rowHeight;
+
+    const canIncrementalUpdate = vStart !== -1 && startIdx < vEnd && endIdx > vStart;
+
+    if (!canIncrementalUpdate){
+      els.grid.innerHTML = '';
+      cardEls = [];
+
+      topSpacerEl = document.createElement('div');
+      topSpacerEl.className = 'rowSpacer';
+      topSpacerEl.style.height = topH + 'px';
+
+      bottomSpacerEl = document.createElement('div');
+      bottomSpacerEl.className = 'rowSpacer';
+      bottomSpacerEl.style.height = bottomH + 'px';
+
+      const frag = document.createDocumentFragment();
+      frag.appendChild(topSpacerEl);
+      for (let i = startIdx; i < endIdx; i++){
+        const card = makeCardEl(FILTERED[i], i, startIdx, animateNew);
+        cardEls.push({ idx: i, el: card });
+        frag.appendChild(card);
       }
-      frag.appendChild(card);
-    });
+      frag.appendChild(bottomSpacerEl);
+      els.grid.appendChild(frag);
+    } else {
+      while (cardEls.length && cardEls[0].idx < startIdx) detachCard(cardEls.shift());
+      while (cardEls.length && cardEls[cardEls.length - 1].idx >= endIdx) detachCard(cardEls.pop());
 
-    els.grid.appendChild(frag);
-    requestAnimationFrame(updateCustomScroll);
+      if (!cardEls.length){
+        for (let i = startIdx; i < endIdx; i++){
+          const card = makeCardEl(FILTERED[i], i, startIdx, false);
+          cardEls.push({ idx: i, el: card });
+          bottomSpacerEl.before(card);
+        }
+      } else {
+        for (let i = cardEls[0].idx - 1; i >= startIdx; i--){
+          const card = makeCardEl(FILTERED[i], i, startIdx, false);
+          topSpacerEl.after(card);
+          cardEls.unshift({ idx: i, el: card });
+        }
+        for (let i = cardEls[cardEls.length - 1].idx + 1; i < endIdx; i++){
+          const card = makeCardEl(FILTERED[i], i, startIdx, false);
+          bottomSpacerEl.before(card);
+          cardEls.push({ idx: i, el: card });
+        }
+      }
+
+      topSpacerEl.style.height = topH + 'px';
+      bottomSpacerEl.style.height = bottomH + 'px';
+    }
+
+    vStart = startIdx; vEnd = endIdx;
   }
 
   function buildCard(item){
@@ -743,7 +868,12 @@
   }
 
   els.scrollarea.addEventListener('scroll', () => {
-    requestAnimationFrame(updateCustomScroll);
+    if (scrollRAF) return;
+    scrollRAF = requestAnimationFrame(() => {
+      scrollRAF = null;
+      updateCustomScroll();
+      renderVirtual(false);
+    });
   }, { passive: true });
 
   let dragging = false;
@@ -755,7 +885,7 @@
     els.scrollThumb.classList.add('dragging');
     dragStartY = e.clientY;
     dragStartScrollTop = els.scrollarea.scrollTop;
-    els.scrollThumb.setPointerCapture(e.pointerId);
+    try{ els.scrollThumb.setPointerCapture(e.pointerId); }catch(err){}
   }
 
   function onPointerMove(e){
@@ -764,8 +894,10 @@
     const trackHeight = els.customScroll.clientHeight;
     const thumbHeight = els.scrollThumb.offsetHeight;
     const scrollable = sa.scrollHeight - sa.clientHeight;
+    const trackRange = trackHeight - thumbHeight;
+    if (trackRange <= 0 || scrollable <= 0) return;
     const deltaY = e.clientY - dragStartY;
-    const deltaScroll = (deltaY / (trackHeight - thumbHeight)) * scrollable;
+    const deltaScroll = (deltaY / trackRange) * scrollable;
     sa.scrollTop = dragStartScrollTop + deltaScroll;
   }
 
@@ -809,6 +941,7 @@
     clearTimeout(resizeDebounce);
     resizeDebounce = setTimeout(() => {
       computeCols();
+      if (FILTERED.length) renderVirtual(false);
       requestAnimationFrame(updateCustomScroll);
     }, 160);
   });
