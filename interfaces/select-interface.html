@@ -380,6 +380,19 @@
         'https://game.arzfun.hhos.net/client/json/table/get?key=weapons'
       ],
       imageBases: []
+    },
+    items: {
+      title: 'Предметы',
+      selectAction: 'selectItem',
+      placeholder: 'Поиск предмета по названию или ID…',
+      jsonSources: [
+        'https://game-api.arzfun.com/client/json/table/get?key=items',
+        'https://game.arzfun.hhos.net/client/json/table/get?key=items'
+      ],
+      imageBases: [
+        'https://resource.arzfun.com/projects/arizona-rp/assets/images/donate/',
+        'https://rsrc.arzfun.hhos.net/projects/arizona-rp/assets/images/donate/'
+      ]
     }
   };
 
@@ -391,7 +404,7 @@
 
   const params = new URLSearchParams(window.location.search);
   let TYPE = (params.get('type') || 'cars').toLowerCase();
-  if (TYPE !== 'cars' && TYPE !== 'skins' && TYPE !== 'weapons') TYPE = 'cars';
+  if (TYPE !== 'cars' && TYPE !== 'skins' && TYPE !== 'weapons' && TYPE !== 'items') TYPE = 'cars';
   const CFG = CONFIG[TYPE];
   const CACHE_KEY = 'arzfun.select.list.' + TYPE;
 
